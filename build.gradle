@@ -1,0 +1,81 @@
+buildscript {
+    ext {
+        springBootVersion = '2.0.3.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.siteminder.pay.beef'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    providedRuntime
+}
+
+test {
+    //we want display the following test events
+    testLogging {
+        events "PASSED", "FAILED", "SKIPPED"
+    }
+}
+
+dependencies {
+    compile "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+    compile "org.springframework.boot:spring-boot-starter-hateoas:$springBootVersion"
+    compile "com.amazonaws:aws-java-sdk-s3:1.11.349"
+    compile "javax.inject:javax.inject:1"
+    compile "org.apache.httpcomponents:httpclient:4.5.5"
+    compile "com.stripe:stripe-java:12.0.0"
+    compile "io.micrometer:micrometer-registry-prometheus"
+    compile "org.springframework.boot:spring-boot-starter-actuator"
+    compile "org.mariadb.jdbc:mariadb-java-client"
+    compile "javax.xml.bind:jaxb-api:2.2.11"
+    compile "com.google.guava:guava:25.0-jre"
+    compile "com.auth0:auth0:1.5.1"
+    compile "com.auth0:auth0-spring-security-api:1.0.0"
+    compile "uk.com.robust-it:cloning:1.9.10"
+    compile "org.springframework.boot:spring-boot-devtools"
+    testImplementation "org.mockito:mockito-core:2.13.0"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
+    testImplementation "org.assertj:assertj-core:3.8.0"
+    testImplementation "org.powermock:powermock-module-junit4:2.0.0"
+    testImplementation "org.powermock:powermock-api-mockito2:2.0.0"
+
+    runtime 'net.logstash.logback:logstash-logback-encoder:5.1'
+}
+
+def static getenv(path = ".env") {
+    def env = [:]
+
+    def file = new File(path)
+    if (file.exists()) {
+        file.eachLine { line ->
+            def (name, value) = line.tokenize("=")
+            env[name.trim()] = value.trim()
+        }
+    }
+
+    return env
+}
+
+bootRun {
+    doFirst {
+        getenv().each { name, value -> environment name, value }
+    }
+}
